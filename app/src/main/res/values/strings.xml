@@ -1,3 +1,14 @@
 <resources>
     <string name="app_name">Another Term Shell Plugin - Battery Info</string>
+    <string-array name="msg_battery_status">
+        <item>Unable to obtain</item>
+        <item>Unknown</item>
+        <item>Charging</item>
+        <item>Discharging</item>
+        <item>Not charging</item>
+        <item>Full</item>
+    </string-array>
+    <string name="desc_plugin"><![CDATA[
+        <p>Just the battery status.</p>
+    ]]></string>
 </resources>

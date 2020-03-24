@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.BatteryManager;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.ParcelFileDescriptor;
 
 import androidx.annotation.NonNull;
@@ -18,19 +19,14 @@ import java.util.concurrent.ExecutionException;
 import green_green_avk.anothertermshellpluginutils.BaseShellService;
 import green_green_avk.anothertermshellpluginutils.ExecutionContext;
 import green_green_avk.anothertermshellpluginutils.MainThreadHelper;
+import green_green_avk.anothertermshellpluginutils.Protocol;
 import green_green_avk.anothertermshellpluginutils.Utils;
 
 public final class ShellService extends BaseShellService {
-    private static final String[] strStatus = new String[]{
-            "Unable to obtain",
-            "Unknown",
-            "Charging",
-            "Discharging",
-            "Not charging",
-            "Full"
-    };
 
-    private static String getStrStatus(final int v) {
+    private String getStrStatus(final int v) {
+        final String[] strStatus =
+                this.getResources().getStringArray(R.array.msg_battery_status);
         try {
             return strStatus[v];
         } catch (final IndexOutOfBoundsException e) {
@@ -41,24 +37,28 @@ public final class ShellService extends BaseShellService {
     private static final class BatteryInfo {
         private int level; // %
         private int status;
+        private int temperature;
+        private String technology;
     }
 
     private static BatteryInfo getBatteryInfo(@NonNull final Context context) {
         final BatteryInfo r = new BatteryInfo();
+        final Intent batteryStatus = context.registerReceiver(null,
+                new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
+        if (batteryStatus == null) return null;
         if (Build.VERSION.SDK_INT >= 26) {
             final BatteryManager bm = (BatteryManager) context.getSystemService(BATTERY_SERVICE);
             r.level = bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY);
             r.status = bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_STATUS);
         } else {
-            final Intent batteryStatus = context.registerReceiver(null,
-                    new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
-            if (batteryStatus == null) return null;
             final int level = batteryStatus.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
             final int scale = batteryStatus.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
             if (level < 0 || scale < 1) r.level = -1;
             else r.level = (int) ((level / (double) scale) * 100);
             r.status = batteryStatus.getIntExtra(BatteryManager.EXTRA_STATUS, 0);
         }
+        r.temperature = batteryStatus.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, Integer.MIN_VALUE);
+        r.technology = batteryStatus.getStringExtra(BatteryManager.EXTRA_TECHNOLOGY);
         return r;
     }
 
@@ -76,7 +76,7 @@ public final class ShellService extends BaseShellService {
         try {
             r = MainThreadHelper.run(new Callable<BatteryInfo>() {
                 @Override
-                public BatteryInfo call() throws Exception {
+                public BatteryInfo call() {
                     return getBatteryInfo(ShellService.this);
                 }
             });
@@ -91,10 +91,20 @@ public final class ShellService extends BaseShellService {
             Utils.write(stderr, "Can't get battery info\n");
             return -1;
         }
-        Utils.write(stdout, String.format(Locale.ROOT, "%d%% %s\n",
+        Utils.write(stdout, String.format(Locale.ROOT, "%d%% / %s / %d.%d °C / %s\n",
                 r.level,
-                getStrStatus(r.status)
+                getStrStatus(r.status),
+                r.temperature / 10, r.temperature % 10,
+                r.technology
         ));
         return 0;
+    }
+
+    @Override
+    protected Bundle onMeta() {
+        final Bundle b = new Bundle();
+        b.putInt(Protocol.META_KEY_INFO_RES_ID, R.string.desc_plugin);
+        b.putInt(Protocol.META_KEY_INFO_RES_TYPE, Protocol.STRING_CONTENT_TYPE_XML_AT);
+        return b;
     }
 }
