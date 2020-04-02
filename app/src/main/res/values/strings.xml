@@ -1,5 +1,12 @@
 <resources>
     <string name="app_name">Another Term Shell Plugin - Battery Info</string>
+    <string name="msg_battery_not_present">Not present</string>
+    <string name="msg_external_power_source_s">External power source: %s</string>
+    <string-array name="msg_battery_plugged">
+        <item>AC</item>
+        <item>USB</item>
+        <item>Wireless</item>
+    </string-array>
     <string-array name="msg_battery_status">
         <item>Unable to obtain</item>
         <item>Unknown</item>
@@ -7,6 +14,16 @@
         <item>Discharging</item>
         <item>Not charging</item>
         <item>Full</item>
+    </string-array>
+    <string-array name="msg_battery_health">
+        <item>Unable to obtain</item>
+        <item>Unknown</item>
+        <item>Good</item>
+        <item>Overheat</item>
+        <item>Dead</item>
+        <item>Overvoltage</item>
+        <item>Unspecified</item>
+        <item>Cold</item>
     </string-array>
     <string name="desc_plugin"><![CDATA[
         <p>Just the battery status.</p>
