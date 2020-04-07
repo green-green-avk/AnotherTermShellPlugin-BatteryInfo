@@ -71,13 +71,18 @@ public final class ShellService extends BaseShellService {
         r.plugged = batteryStatus.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0);
         if (!(r.present = batteryStatus.getBooleanExtra(BatteryManager.EXTRA_PRESENT, false)))
             return r;
-        if (Build.VERSION.SDK_INT >= 21) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             final BatteryManager bm = (BatteryManager) context.getSystemService(BATTERY_SERVICE);
             r.level = bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY);
             r.current_now = bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_NOW);
             r.current_average = bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_AVERAGE);
             r.charge_counter = bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CHARGE_COUNTER);
             r.energy_counter = bm.getLongProperty(BatteryManager.BATTERY_PROPERTY_ENERGY_COUNTER);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                r.status = bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_STATUS);
+            } else {
+                r.status = batteryStatus.getIntExtra(BatteryManager.EXTRA_STATUS, 0);
+            }
         } else {
             final int level = batteryStatus.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
             final int scale = batteryStatus.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
