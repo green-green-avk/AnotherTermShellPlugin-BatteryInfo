@@ -101,11 +101,6 @@ public final class ShellService extends BaseShellService {
     protected int onExec(@NonNull final ExecutionContext execCtx,
                          @NonNull final byte[][] args, @NonNull final ParcelFileDescriptor[] fds) {
         final OutputStream stderr = new FileOutputStream(fds[2].getFileDescriptor());
-        if (!execCtx.verify(BuildConfig.DEBUG ?
-                BaseShellService.trustedClientsDebug : BaseShellService.trustedClients)) {
-            Utils.write(stderr, "Access denied: untrusted client\n");
-            return 1;
-        }
         final OutputStream stdout = new FileOutputStream(fds[1].getFileDescriptor());
         final BatteryInfo r;
         try {
