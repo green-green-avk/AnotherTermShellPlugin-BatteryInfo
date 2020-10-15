@@ -1,4 +1,4 @@
-package green_green_avk.anothertermshellplugin_batteryinfo;
+package green_green_avk.anothertermshellplugin;
 
 import android.content.Context;
 import android.content.Intent;
@@ -17,6 +17,7 @@ import java.util.Locale;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
+import green_green_avk.anothertermshellplugin_batteryinfo.R;
 import green_green_avk.anothertermshellpluginutils.BaseShellService;
 import green_green_avk.anothertermshellpluginutils.ExecutionContext;
 import green_green_avk.anothertermshellpluginutils.MainThreadHelper;
