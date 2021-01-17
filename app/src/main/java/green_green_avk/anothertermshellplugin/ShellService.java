@@ -12,6 +12,7 @@ import androidx.annotation.ArrayRes;
 import androidx.annotation.NonNull;
 
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Locale;
 import java.util.concurrent.Callable;
@@ -103,52 +104,63 @@ public final class ShellService extends BaseShellService {
                          @NonNull final byte[][] args, @NonNull final ParcelFileDescriptor[] fds) {
         final OutputStream stderr = new FileOutputStream(fds[2].getFileDescriptor());
         final OutputStream stdout = new FileOutputStream(fds[1].getFileDescriptor());
-        final BatteryInfo r;
         try {
-            r = MainThreadHelper.run(new Callable<BatteryInfo>() {
-                @Override
-                public BatteryInfo call() {
-                    return getBatteryInfo(ShellService.this);
-                }
-            });
-        } catch (final ExecutionException e) {
-            Utils.write(stderr, e.getMessage() + "\n");
-            return 1;
-        } catch (final InterruptedException e) {
-            Utils.write(stderr, e.getMessage() + "\n");
-            return 1;
-        }
-        if (r == null) {
-            Utils.write(stderr, "Can't get battery info\n");
-            return 1;
-        }
-        Utils.write(stdout, String.format(Locale.ROOT,
-                getString(R.string.msg_external_power_source_s) + "\n",
-                getFlagsStr(r.plugged, R.array.msg_battery_plugged)
-        ));
-        if (!r.present) {
-            Utils.write(stdout, getString(R.string.msg_battery_not_present) + "\n");
-            return 0;
-        }
-        Utils.write(stdout, String.format(Locale.ROOT,
-                "%d%% / %s / %s / %d.%d °C / %d %sV / %s\n",
-                r.level,
-                getIntStr(r.status, R.array.msg_battery_status),
-                getIntStr(r.health, R.array.msg_battery_health),
-                r.temperature / 10, r.temperature % 10,
-                // https://stackoverflow.com/questions/24500795/android-battery-voltage-unit-discrepancies
-                r.voltage, r.voltage < 500 ? "" : "m",
-                r.technology
-        ));
-        if (r.energy_counter >= 0)
+            final BatteryInfo r;
+            try {
+                r = MainThreadHelper.run(new Callable<BatteryInfo>() {
+                    @Override
+                    public BatteryInfo call() {
+                        return getBatteryInfo(ShellService.this);
+                    }
+                });
+            } catch (final ExecutionException e) {
+                Utils.write(stderr, e.getMessage() + "\n");
+                return 1;
+            } catch (final InterruptedException e) {
+                Utils.write(stderr, e.getMessage() + "\n");
+                return 1;
+            }
+            if (r == null) {
+                Utils.write(stderr, "Can't get battery info\n");
+                return 1;
+            }
             Utils.write(stdout, String.format(Locale.ROOT,
-                    "%d µA / %d µA / %d µA·h / %d nW·h\n",
-                    r.current_now,
-                    r.current_average,
-                    r.charge_counter,
-                    r.energy_counter
+                    getString(R.string.msg_external_power_source_s) + "\n",
+                    getFlagsStr(r.plugged, R.array.msg_battery_plugged)
             ));
-        return 0;
+            if (!r.present) {
+                Utils.write(stdout, getString(R.string.msg_battery_not_present) + "\n");
+                return 0;
+            }
+            Utils.write(stdout, String.format(Locale.ROOT,
+                    "%d%% / %s / %s / %d.%d °C / %d %sV / %s\n",
+                    r.level,
+                    getIntStr(r.status, R.array.msg_battery_status),
+                    getIntStr(r.health, R.array.msg_battery_health),
+                    r.temperature / 10, r.temperature % 10,
+                    // https://stackoverflow.com/questions/24500795/android-battery-voltage-unit-discrepancies
+                    r.voltage, r.voltage < 500 ? "" : "m",
+                    r.technology
+            ));
+            if (r.energy_counter >= 0)
+                Utils.write(stdout, String.format(Locale.ROOT,
+                        "%d µA / %d µA / %d µA·h / %d nW·h\n",
+                        r.current_now,
+                        r.current_average,
+                        r.charge_counter,
+                        r.energy_counter
+                ));
+            return 0;
+        } finally {
+            try {
+                stdout.close();
+            } catch (final IOException ignored) {
+            }
+            try {
+                stderr.close();
+            } catch (final IOException ignored) {
+            }
+        }
     }
 
     @Override
