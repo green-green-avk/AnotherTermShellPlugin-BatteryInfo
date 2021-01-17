@@ -15,7 +15,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Locale;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
 import green_green_avk.anothertermshellplugin_batteryinfo.R;
@@ -107,12 +106,7 @@ public final class ShellService extends BaseShellService {
         try {
             final BatteryInfo r;
             try {
-                r = MainThreadHelper.run(new Callable<BatteryInfo>() {
-                    @Override
-                    public BatteryInfo call() {
-                        return getBatteryInfo(ShellService.this);
-                    }
-                });
+                r = MainThreadHelper.run(() -> getBatteryInfo(ShellService.this));
             } catch (final ExecutionException e) {
                 Utils.write(stderr, e.getMessage() + "\n");
                 return 1;
