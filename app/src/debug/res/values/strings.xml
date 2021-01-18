@@ -1,4 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Another Term Shell Plugin - Battery Info (Debug)</string>
+    <string name="desc_plugin"><![CDATA[
+        <p>Just the battery status.</p>
+        <p>Usage example
+        (from <a href=\"https://green-green-avk.github.io/AnotherTerm-docs/\">Another Term</a>)
+        (debug version):<br/>
+        <code><clipboard>\"$TERMSH\" plugin green_green_avk.anothertermshellplugin_batteryinfo.debug</clipboard></code>
+        </p>
+    ]]></string>
 </resources>

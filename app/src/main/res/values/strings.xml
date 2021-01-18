@@ -27,5 +27,9 @@
     </string-array>
     <string name="desc_plugin"><![CDATA[
         <p>Just the battery status.</p>
+        <p>Usage example
+        (from <a href=\"https://green-green-avk.github.io/AnotherTerm-docs/\">Another Term</a>):<br/>
+        <code><clipboard>\"$TERMSH\" plugin green_green_avk.anothertermshellplugin_batteryinfo</clipboard></code>
+        </p>
     ]]></string>
 </resources>
